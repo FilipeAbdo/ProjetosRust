@@ -7,4 +7,10 @@ edition = "2021"
 
 [dependencies]
 sdl2 = "0.31.0"
+gl = "0.10.0"
+
+# [dependencies.sdl2]
+# version = "0.31.0"
+# default-features = false
+# features = ["image"]
 

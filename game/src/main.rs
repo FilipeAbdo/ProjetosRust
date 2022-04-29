@@ -45,13 +45,12 @@ fn main() {
   
     unsafe {
         gl::Viewport(0, 0, 900, 700);
-        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+        gl::ClearColor(0.15, 0.15, 0.3, 1.0);
     }
 
     let duration: time::Duration = time::Duration::from_millis(10);
     
     let mut count: i16 = 0;
-
 
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {

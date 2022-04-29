@@ -17,7 +17,7 @@ fn main() {
     gl_attr.set_context_version(4, 1);
 
     let window = video_subsystem
-        .window("Game", 1920, 950)
+        .window("Game", 950, 950)
         .opengl()
         .resizable()
         .build()
@@ -40,11 +40,11 @@ fn main() {
 
     shader_program.set_used();
 
-    let mut vao: gl::types::GLuint = 0;
+    // let mut vao: gl::types::GLuint = 0;
     // let mut vao: gl::types::GLuint = 0;
   
     unsafe {
-        gl::Viewport(0, 0, 900, 700);
+        gl::Viewport(0, 0, 950, 950);
         gl::ClearColor(0.15, 0.15, 0.3, 1.0);
     }
 
@@ -80,32 +80,69 @@ fn main() {
         }
 
         let angle_value: f32 = ((count as f32) * (2.0 * std::f32::consts::PI)) / 360.0;
-        let radius: f32 = f32::powf(f32::powf( 0.5, 2.0) + f32::powf( 0.5, 2.0), 0.5);
+        let radius: f32 = 0.5;
+        // let radius: f32 = f32::powf(f32::powf( 0.5, 2.0) + f32::powf( 0.5, 2.0), 0.5);
         // print!("radius {} angle_value {} -> ", radius, angle_value);
         
-        let p1_x:f32 = radius * (angle_value + 7.0 * std::f32::consts::PI / 6.0).cos();
-        let p1_y:f32 = radius * (angle_value + 7.0 * std::f32::consts::PI / 6.0).sin();
+        // let p1_x:f32 = radius * (angle_value + 7.0 * std::f32::consts::PI / 6.0).cos();
+        // let p1_y:f32 = radius * (angle_value + 7.0 * std::f32::consts::PI / 6.0).sin();
         
-        let p2_x:f32 = radius * (angle_value + -std::f32::consts::PI / 6.0).cos();
-        let p2_y:f32 = radius * (angle_value + -std::f32::consts::PI / 6.0).sin();
+        // let p2_x:f32 = radius * (angle_value + -std::f32::consts::PI / 6.0).cos();
+        // let p2_y:f32 = radius * (angle_value + -std::f32::consts::PI / 6.0).sin();
         
-        let p3_x:f32 = radius * (angle_value + std::f32::consts::PI / 2.0).cos();
-        let p3_y:f32 = radius * (angle_value + std::f32::consts::PI / 2.0).sin();
+        // let p3_x:f32 = radius * (angle_value + std::f32::consts::PI / 2.0).cos();
+        // let p3_y:f32 = radius * (angle_value + std::f32::consts::PI / 2.0).sin();
+
+        let p1_x:f32 = radius * (angle_value + std::f32::consts::PI / 4.0).cos();
+        let p1_y:f32 = radius * (angle_value + std::f32::consts::PI / 4.0).sin();
+        
+        let p2_x:f32 = radius * (angle_value + 3.0 * std::f32::consts::PI / 4.0).cos();
+        let p2_y:f32 = radius * (angle_value + 3.0 * std::f32::consts::PI / 4.0).sin();
+        
+        let p3_x:f32 = radius * (angle_value + 5.0 * std::f32::consts::PI / 4.0).cos();
+        let p3_y:f32 = radius * (angle_value + 5.0 * std::f32::consts::PI / 4.0).sin();
+        
+        let p4_x:f32 = radius * (angle_value + 7.0 * std::f32::consts::PI / 4.0).cos();
+        let p4_y:f32 = radius * (angle_value + 7.0 * std::f32::consts::PI / 4.0).sin();
 
         // println!("p1_x {}, p1_y {} --> p2_x {}, p2_y {} --> p3_x {}, p3_y {}", p1_x, p1_y, p2_x, p2_y, p3_x, p3_y);
+        println!("p1_x {}, p1_y {} --> p2_x {}, p2_y {} --> p3_x {}, p3_y {} --> p4_x {}, p4_y {}", p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y);
         
-        let move_vertices: Vec<f32> = vec![
+        // let move_vertices: Vec<f32> = vec![
+        //     // positions      // colors
+        //         p1_x, p1_y, 0.0,   1.0, 0.0, 0.0,    // right
+        //         p2_x, p2_y, 0.0,   0.0, 1.0, 0.0,    // left
+        //         p3_x, p3_y, 0.0,   0.0, 0.0, 1.0     // center
+        // ];
+
+        let triangle_1: Vec<f32> = vec![
             // positions      // colors
-                p1_x, p1_y, 0.0,   1.0, 0.0, 0.0,    // right
-                p2_x, p2_y, 0.0,   0.0, 1.0, 0.0,    // left
-                p3_x, p3_y, 0.0,   0.0, 0.0, 1.0     // center
+                p1_x, p1_y, 0.0,   0.5, 0.5, 0.2,    // top right
+                p2_x, p2_y, 0.0,   0.5, 0.5, 0.2,    // top left
+                p3_x, p3_y, 0.0,   0.5, 0.5, 0.2,    // botom left
+        ];
+        let triangle_2: Vec<f32> = vec![
+            // positions      // colors
+                p1_x, p1_y, 0.0,   0.5, 0.5, 0.2,    // top right
+                p3_x, p3_y, 0.0,   0.5, 0.5, 0.2,     // botom left
+                p4_x, p4_y, 0.0,   0.5, 0.5, 0.2,     // botom right
         ];
         
-        vao = draw_triangle(move_vertices);
+        let vao_1: gl::types::GLuint = draw_triangle(triangle_1);
+        let vao_2: gl::types::GLuint = draw_triangle(triangle_2);
 
         shader_program.set_used();
+        // unsafe {
+        //     gl::BindVertexArray(vao);
+        //     gl::DrawArrays(
+        //         gl::TRIANGLES, // mode
+        //         0, // starting index in the enabled arrays
+        //         3 // number of indices to be rendered
+        //     );
+        // }
+
         unsafe {
-            gl::BindVertexArray(vao);
+            gl::BindVertexArray(vao_1);
             gl::DrawArrays(
                 gl::TRIANGLES, // mode
                 0, // starting index in the enabled arrays
@@ -113,9 +150,17 @@ fn main() {
             );
         }
 
+        unsafe {
+            gl::BindVertexArray(vao_2);
+            gl::DrawArrays(
+                gl::TRIANGLES, // mode
+                0, // starting index in the enabled arrays
+                3 // number of indices to be rendered
+            );
+        }
         window.gl_swap_window();
 
-        count = (count + 2)%360;
+        count = (count + 0)%360;
         // println!("Angle {:03}°", count);
         
         thread::sleep(duration);

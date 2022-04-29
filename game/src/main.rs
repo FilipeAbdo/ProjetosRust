@@ -1,5 +1,5 @@
 use sdl2::keyboard::Keycode;
-
+use std::{thread, time};
 
 extern crate gl;
 extern crate sdl2;
@@ -7,6 +7,7 @@ extern crate sdl2;
 pub mod render_gl;
 
 fn main() {
+    #[warn(unused_variables)]
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
 
@@ -16,7 +17,7 @@ fn main() {
     gl_attr.set_context_version(4, 1);
 
     let window = video_subsystem
-        .window("Game", 900, 700)
+        .window("Game", 1920, 950)
         .opengl()
         .resizable()
         .build()
@@ -39,13 +40,90 @@ fn main() {
 
     shader_program.set_used();
 
-    let vertices: Vec<f32> = vec![
-        // positions      // colors
-        0.5, -0.5, 0.0,   1.0, 0.0, 0.0,   // bottom right
-        -0.5, -0.5, 0.0,  0.0, 1.0, 0.0,   // bottom left
-        0.0,  0.5, 0.0,   0.0, 0.0, 1.0    // top
-    ];
-            
+    let mut vao: gl::types::GLuint = 0;
+    // let mut vao: gl::types::GLuint = 0;
+  
+    unsafe {
+        gl::Viewport(0, 0, 900, 700);
+        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+    }
+
+    let duration: time::Duration = time::Duration::from_millis(10);
+    
+    let mut count: i16 = 0;
+
+
+    let mut event_pump = sdl.event_pump().unwrap();
+    'main: loop {
+        for event in event_pump.poll_iter() {
+            match event {
+                sdl2::event::Event::Quit {..} => {
+                    break 'main
+                },
+                sdl2::event::Event::KeyDown { keycode: Some(Keycode::A), ..} => {
+                    if matches!(detect_pressing(Keycode::A, KeyStatus::DOWN),KeyEvent::Pressed) {
+                        println!("Pressed A");
+                    }
+                },
+                sdl2::event::Event::KeyUp { keycode: Some(Keycode::A), ..} => {
+                    if matches!(detect_pressing(Keycode::A, KeyStatus::UP),KeyEvent::Pressed) {
+                        println!("Pressed A");
+                    }
+                },
+                sdl2::event::Event::KeyUp { keycode: Some(Keycode::B), ..} => println!("Keycode B"),
+                _ => {},
+            }
+
+        }
+
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+
+        let angle_value: f32 = ((count as f32) * (2.0 * std::f32::consts::PI)) / 360.0;
+        let radius: f32 = f32::powf(f32::powf( 0.5, 2.0) + f32::powf( 0.5, 2.0), 0.5);
+        // print!("radius {} angle_value {} -> ", radius, angle_value);
+        
+        let p1_x:f32 = radius * (angle_value + 7.0 * std::f32::consts::PI / 6.0).cos();
+        let p1_y:f32 = radius * (angle_value + 7.0 * std::f32::consts::PI / 6.0).sin();
+        
+        let p2_x:f32 = radius * (angle_value + -std::f32::consts::PI / 6.0).cos();
+        let p2_y:f32 = radius * (angle_value + -std::f32::consts::PI / 6.0).sin();
+        
+        let p3_x:f32 = radius * (angle_value + std::f32::consts::PI / 2.0).cos();
+        let p3_y:f32 = radius * (angle_value + std::f32::consts::PI / 2.0).sin();
+
+        // println!("p1_x {}, p1_y {} --> p2_x {}, p2_y {} --> p3_x {}, p3_y {}", p1_x, p1_y, p2_x, p2_y, p3_x, p3_y);
+        
+        let move_vertices: Vec<f32> = vec![
+            // positions      // colors
+                p1_x, p1_y, 0.0,   1.0, 0.0, 0.0,    // right
+                p2_x, p2_y, 0.0,   0.0, 1.0, 0.0,    // left
+                p3_x, p3_y, 0.0,   0.0, 0.0, 1.0     // center
+        ];
+        
+        vao = draw_triangle(move_vertices);
+
+        shader_program.set_used();
+        unsafe {
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(
+                gl::TRIANGLES, // mode
+                0, // starting index in the enabled arrays
+                3 // number of indices to be rendered
+            );
+        }
+
+        window.gl_swap_window();
+
+        count = (count + 2)%360;
+        // println!("Angle {:03}°", count);
+        
+        thread::sleep(duration);
+    }
+}
+
+fn draw_triangle(vertices:Vec<f32>) -> gl::types::GLuint{
     let mut vbo: gl::types::GLuint = 0;
     unsafe {
         gl::GenBuffers(1, &mut vbo);
@@ -95,51 +173,7 @@ fn main() {
         gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         gl::BindVertexArray(0);
     }
-
-    unsafe {
-        gl::Viewport(0, 0, 900, 700);
-        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
-    }
-
-    let mut event_pump = sdl.event_pump().unwrap();
-    'main: loop {
-        for event in event_pump.poll_iter() {
-            match event {
-                sdl2::event::Event::Quit {..} => {
-                    break 'main
-                },
-                sdl2::event::Event::KeyDown { keycode: Some(Keycode::A), ..} => {
-                    if matches!(detect_pressing(Keycode::A, KeyStatus::DOWN),KeyEvent::Pressed) {
-                        println!("Pressed A");
-                    }
-                },
-                sdl2::event::Event::KeyUp { keycode: Some(Keycode::A), ..} => {
-                    if matches!(detect_pressing(Keycode::A, KeyStatus::UP),KeyEvent::Pressed) {
-                        println!("Pressed A");
-                    }
-                },
-                sdl2::event::Event::KeyUp { keycode: Some(Keycode::B), ..} => println!("Keycode B"),
-                _ => {},
-            }
-
-            unsafe {
-                gl::Clear(gl::COLOR_BUFFER_BIT);
-            }
-    
-            shader_program.set_used();
-            unsafe {
-                gl::BindVertexArray(vao);
-                gl::DrawArrays(
-                    gl::TRIANGLES, // mode
-                    0, // starting index in the enabled arrays
-                    3 // number of indices to be rendered
-                );
-            }
-
-
-            window.gl_swap_window();
-        }
-    }
+    return vao;
 }
 
 struct KeyInfo{
